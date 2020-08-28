@@ -21,4 +21,5 @@ for file in excel_files:
                 else:
                     df_out = pd.concat([df_out, results])
 
+df_out.drop_duplicates(inplace=True)
 df_out.to_excel(out_file)
