@@ -15,11 +15,13 @@ for file in excel_files:
 
         for term in search_terms:
             results = df.loc[df.deal_text.str.contains(term, case=False)]
-            if not results.empty:
+            results_copy = results.copy(deep=True)
+            if not results_copy.empty:
+                results_copy['term_matched'] = term
                 if df_out.empty:
-                    df_out = results
+                    df_out = results_copy
                 else:
-                    df_out = pd.concat([df_out, results])
+                    df_out = pd.concat([df_out, results_copy])
 
 df_out.drop_duplicates(inplace=True)
 df_out.to_excel(out_file)
