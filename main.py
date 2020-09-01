@@ -1,9 +1,10 @@
 import pandas as pd
 import glob
+import numpy as np
 
 excel_files = glob.glob('*.xlsx')
 out_file = 'output.xlsx'
-df_out = pd.DataFrame()
+
 for file in excel_files:
     if file != out_file:
         df = pd.read_excel(file, header=1, usecols='B:AC')
@@ -14,14 +15,18 @@ for file in excel_files:
         df.columns = df.columns.str.strip().str.lower().str.replace('\n', ' ').str.replace(' ', '_').str.replace('(', '').str.replace(')', '')
 
         for term in search_terms:
-            results = df.loc[df.deal_text.str.contains(term, case=False)]
-            results_copy = results.copy(deep=True)
-            if not results_copy.empty:
-                results_copy['term_matched'] = term
-                if df_out.empty:
-                    df_out = results_copy
-                else:
-                    df_out = pd.concat([df_out, results_copy])
+            # Create an initial temp column (suffixed with '_temp') for current search term and insert search result 
+            temp_col_name = term + '_temp'
+            df[temp_col_name] = df.deal_text.str.contains(term, case=False)
+            # Create a temp column (named after search term) and put in search term found.
+            df[term] = np.where(df[temp_col_name] == True, term, '')
+            # Drop the initial temp column
+            df.drop(columns=[temp_col_name], inplace=True)
+        # Concatenate all of the discovered (non-empty) search terms (columns with term as header)
+        df['matches'] = df[search_terms].apply(lambda row: ';'.join(filter(None, row.values.astype(str))), axis=1)
+        # Drop second lot of temp columns
+        df.drop(columns=search_terms, inplace=True)
+        # Retain only those with matches
+        df = df.loc[df.matches.astype(bool)]
 
-df_out.drop_duplicates(inplace=True)
-df_out.to_excel(out_file)
+df.to_excel(out_file)
