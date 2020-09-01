@@ -22,9 +22,11 @@ for file in excel_files:
             df[term] = np.where(df[temp_col_name] == True, term, '')
             # Drop the initial temp column
             df.drop(columns=[temp_col_name], inplace=True)
-        # Concatonate all of the discovered (non-empty) search terms (columns with term as header)
+        # Concatenate all of the discovered (non-empty) search terms (columns with term as header)
         df['matches'] = df[search_terms].apply(lambda row: ';'.join(filter(None, row.values.astype(str))), axis=1)
         # Drop second lot of temp columns
         df.drop(columns=search_terms, inplace=True)
+        # Retain only those with matches
+        df = df.loc[df.matches.astype(bool)]
 
 df.to_excel(out_file)
