@@ -13,6 +13,7 @@ for file in excel_files:
                         'turbine-generated power', 'tidal energy', 'hydropower', 'geothermal power']
 
         df.columns = df.columns.str.strip().str.lower().str.replace('\n', ' ').str.replace(' ', '_').str.replace('(', '').str.replace(')', '')
+        df.rename(inplace=True, index=lambda row: row + 3)
 
         for term in search_terms:
             # Create an initial temp column (suffixed with '_temp') for current search term and insert search result 
